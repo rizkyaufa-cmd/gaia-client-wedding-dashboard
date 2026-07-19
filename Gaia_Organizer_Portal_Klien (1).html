@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Gaia Organizer — Portal Klien</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+:root{
+  --ink:#2B2430;
+  --ink-soft:#5B5460;
+  --paper:#FAF6F0;
+  --paper-deep:#F2ECE2;
+  --white:#FFFFFF;
+  --bloom:#9C4F68;
+  --bloom-deep:#7C3B52;
+  --bloom-mist:#F3E3E8;
+  --moss:#6E7B5C;
+  --moss-deep:#565F47;
+  --moss-mist:#E7EBE0;
+  --gold:#B08A46;
+  --gold-mist:#F1E7D2;
+  --amber:#BD7440;
+  --amber-mist:#F5E4D5;
+  --mist:#ECE4DA;
+  --line:#DFD5C8;
+  --shadow: 0 1px 2px rgba(43,36,48,0.04), 0 8px 24px -12px rgba(43,36,48,0.18);
+  --shadow-lift: 0 4px 8px rgba(43,36,48,0.06), 0 24px 48px -16px rgba(43,36,48,0.28);
+  --font-display:'Fraunces', Georgia, serif;
+  --font-body:'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  --radius-lg: 24px;
+  --radius-md: 16px;
+  --radius-sm: 10px;
+}
+
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{height:100%;}
+body{
+  font-family: var(--font-body);
+  background: var(--paper);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  min-height:100vh;
+  position:relative;
+  overflow-x:hidden;
+}
+img,svg{display:block; max-width:100%;}
+button{font-family:inherit; cursor:pointer;}
+input{font-family:inherit;}
+::selection{background: var(--bloom-mist); color:var(--bloom-deep);}
+
+/* Reduced motion respect */
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important;}
+}
+
+/* ============ Utility layout ============ */
+.app-root{ min-height:100vh; display:flex; flex-direction:column; }
+.container{ width:100%; max-width:560px; margin:0 auto; padding:0 20px; }
+.visually-hidden{ position:absolute; width:1px;height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+.sr-focus:focus-visible{ outline:3px solid var(--bloom); outline-offset:2px; border-radius:8px; }
+
+/* ============ Botanical backdrop (used on gate + headers) ============ */
+.botanical-bg{
+  position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden;
+}
+.botanical-bg svg{ position:absolute; opacity:0.5; }
+
+/* ============ GATE SCREEN ============ */
+.gate-screen{
+  min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  position:relative; padding:32px 24px; text-align:center;
+  background:
+    radial-gradient(120% 90% at 50% -10%, var(--bloom-mist) 0%, transparent 55%),
+    radial-gradient(120% 90% at 100% 110%, var(--moss-mist) 0%, transparent 50%),
+    var(--paper);
+}
+.gate-mark{
+  width:56px; height:56px; margin-bottom:22px; color:var(--bloom);
+  animation: gate-mark-in 900ms cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes gate-mark-in{
+  from{ opacity:0; transform:scale(.6) rotate(-8deg); }
+  to{ opacity:1; transform:scale(1) rotate(0deg); }
+}
+.gate-eyebrow{
+  font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--moss-deep);
+  font-weight:700; margin-bottom:10px;
+}
+.gate-title{
+  font-family:var(--font-display); font-weight:600; font-size:clamp(30px,7vw,42px);
+  line-height:1.08; color:var(--ink); margin-bottom:14px; letter-spacing:-0.01em;
+}
+.gate-sub{
+  font-family:var(--font-display); font-style:italic; font-weight:400; font-size:17px;
+  color:var(--ink-soft); max-width:360px; line-height:1.5; margin-bottom:36px;
+}
+.gate-form{ width:100%; max-width:340px; display:flex; flex-direction:column; gap:12px; }
+.gate-input{
+  width:100%; padding:16px 18px; border-radius:var(--radius-md); border:1.5px solid var(--line);
+  background:var(--white); font-size:16px; letter-spacing:.04em; text-align:center;
+  color:var(--ink); font-weight:600; text-transform:uppercase;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+.gate-input::placeholder{ text-transform:none; font-weight:500; color:#B4AAA0; letter-spacing:0; }
+.gate-input:focus{ outline:none; border-color:var(--bloom); box-shadow:0 0 0 4px var(--bloom-mist); }
+.gate-btn{
+  width:100%; padding:16px 18px; border-radius:var(--radius-md); border:none;
+  background:var(--bloom); color:var(--white); font-size:15px; font-weight:700;
+  letter-spacing:.02em; display:flex; align-items:center; justify-content:center; gap:8px;
+  transition: background 160ms ease, transform 120ms ease;
+  box-shadow: var(--shadow);
+}
+.gate-btn:hover{ background:var(--bloom-deep); }
+.gate-btn:active{ transform:scale(.98); }
+.gate-error{
+  font-size:13.5px; color:var(--amber); font-weight:600; min-height:18px;
+  animation: shake 320ms ease;
+}
+@keyframes shake{
+  0%,100%{ transform:translateX(0); } 25%{ transform:translateX(-4px); } 75%{ transform:translateX(4px); }
+}
+.gate-hint{
+  margin-top:28px; font-size:12.5px; color:var(--ink-soft); line-height:1.6;
+}
+.gate-staff-link{
+  margin-top:6px; font-size:12px; color:#B4AAA0; text-decoration:underline; text-underline-offset:3px;
+  background:none; border:none;
+}
+.gate-staff-link:hover{ color:var(--ink-soft); }
+
+/* ============ APP SHELL ============ */
+.app-shell{ display:none; flex-direction:column; min-height:100vh; }
+.app-shell.is-active{ display:flex; }
+
+.shell-header{
+  position:relative; overflow:hidden;
+  background: linear-gradient(155deg, var(--bloom) 0%, var(--bloom-deep) 100%);
+  color:var(--white); padding:22px 0 28px;
+}
+.shell-header .container{ position:relative; z-index:1; }
+.shell-top-row{ display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:18px; }
+.shell-brand{ display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; opacity:.85; }
+.shell-brand svg{ width:16px; height:16px; }
+.shell-logout{
+  background:rgba(255,255,255,.14); border:none; color:var(--white); font-size:12px; font-weight:600;
+  padding:7px 12px; border-radius:999px; letter-spacing:.02em;
+}
+.shell-logout:hover{ background:rgba(255,255,255,.24); }
+.shell-couple{ font-family:var(--font-display); font-weight:600; font-size:clamp(24px,6vw,30px); margin-bottom:6px; }
+.shell-meta{ font-size:13.5px; opacity:.88; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.shell-meta .dot{ opacity:.6; }
+
+/* ============ TAB NAV ============ */
+.tab-nav{
+  display:flex; gap:4px; background:rgba(255,255,255,.14); padding:4px; border-radius:999px; margin-top:20px;
+}
+.tab-btn{
+  flex:1; border:none; background:transparent; color:var(--white); opacity:.72;
+  font-size:13px; font-weight:700; padding:10px 8px; border-radius:999px; letter-spacing:.01em;
+  transition: background 160ms ease, opacity 160ms ease;
+}
+.tab-btn.is-active{ background:var(--white); color:var(--bloom-deep); opacity:1; }
+
+.shell-body{ flex:1; background:var(--paper); padding:26px 0 64px; }
+.tab-panel{ display:none; animation: panel-in 360ms cubic-bezier(.2,.8,.2,1) both; }
+.tab-panel.is-active{ display:block; }
+@keyframes panel-in{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+
+.section-label{
+  font-size:11.5px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--moss-deep);
+  margin: 30px 0 12px;
+}
+.section-label:first-child{ margin-top:0; }
+
+/* ============ RINGKASAN TAB ============ */
+.hero-card{
+  background:var(--white); border-radius:var(--radius-lg); padding:32px 24px;
+  box-shadow:var(--shadow); display:flex; flex-direction:column; align-items:center; text-align:center;
+  position:relative; overflow:hidden;
+}
+.ring-wrap{ position:relative; width:196px; height:196px; margin-bottom:18px; }
+.ring-wrap svg{ width:100%; height:100%; transform:rotate(-90deg); }
+.ring-track{ fill:none; stroke:var(--mist); stroke-width:3.5; }
+.ring-leaf{ transition: fill 500ms ease, opacity 500ms ease; }
+.ring-center{
+  position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+}
+.ring-pct{ font-family:var(--font-display); font-weight:700; font-size:40px; color:var(--ink); line-height:1; }
+.ring-pct-label{ font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin-top:6px; }
+.hero-days{ font-family:var(--font-display); font-style:italic; font-size:17px; color:var(--bloom-deep); }
+.hero-stage{ font-size:13.5px; color:var(--ink-soft); margin-top:4px; }
+.hero-stage b{ color:var(--ink); font-weight:700; }
+
+.alert-card{
+  margin-top:16px; background:var(--amber-mist); border:1px solid #E4C7A6; border-radius:var(--radius-md);
+  padding:16px 18px; display:flex; gap:12px; align-items:flex-start; text-align:left;
+}
+.alert-card svg{ width:20px; height:20px; flex-shrink:0; color:var(--amber); margin-top:1px; }
+.alert-title{ font-size:13px; font-weight:800; color:#8A5528; margin-bottom:2px; letter-spacing:.02em; }
+.alert-text{ font-size:13px; color:#6B4520; line-height:1.5; }
+
+.stat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px; }
+.stat-card{
+  background:var(--white); border-radius:var(--radius-md); padding:18px; box-shadow:var(--shadow);
+  border-left:4px solid var(--moss);
+}
+.stat-card.is-bloom{ border-left-color:var(--bloom); }
+.stat-card.is-gold{ border-left-color:var(--gold); }
+.stat-card.is-amber{ border-left-color:var(--amber); }
+.stat-label{ font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:6px; }
+.stat-value{ font-family:var(--font-display); font-weight:600; font-size:22px; color:var(--ink); }
+.stat-sub{ font-size:12px; color:var(--ink-soft); margin-top:3px; }
+
+.milestone-card{
+  margin-top:16px; background:var(--white); border-radius:var(--radius-md); padding:18px 20px;
+  box-shadow:var(--shadow); display:flex; align-items:center; gap:14px; text-align:left;
+}
+.milestone-icon{
+  width:44px; height:44px; border-radius:50%; background:var(--moss-mist); color:var(--moss-deep);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.milestone-icon svg{ width:22px; height:22px; }
+.milestone-label{ font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:3px;}
+.milestone-title{ font-weight:700; font-size:14.5px; color:var(--ink); }
+.milestone-date{ font-size:12.5px; color:var(--ink-soft); margin-top:1px; }
+
+/* ============ PERJALANAN (TIMELINE) TAB ============ */
+.timeline{ position:relative; padding-left:36px; }
+.timeline::before{
+  content:''; position:absolute; left:15px; top:6px; bottom:6px; width:2px;
+  background: var(--line);
+}
+.tl-item{ position:relative; padding-bottom:26px; }
+.tl-item:last-child{ padding-bottom:0; }
+.tl-dot{
+  position:absolute; left:-36px; top:0; width:32px; height:32px; border-radius:50%;
+  background:var(--white); border:2px solid var(--line); display:flex; align-items:center; justify-content:center;
+  color:var(--ink-soft); z-index:1; transition: all 260ms ease;
+}
+.tl-dot svg{ width:15px; height:15px; }
+.tl-item.is-done .tl-dot{ background:var(--moss); border-color:var(--moss); color:var(--white); }
+.tl-item.is-current .tl-dot{
+  background:var(--bloom); border-color:var(--bloom); color:var(--white);
+  box-shadow: 0 0 0 5px var(--bloom-mist);
+  animation: pulse-dot 2.4s ease-in-out infinite;
+}
+@keyframes pulse-dot{
+  0%,100%{ box-shadow:0 0 0 5px var(--bloom-mist); }
+  50%{ box-shadow:0 0 0 9px var(--bloom-mist); }
+}
+.tl-card{
+  background:var(--white); border-radius:var(--radius-md); padding:15px 18px; box-shadow:var(--shadow);
+  border:1px solid transparent;
+}
+.tl-item.is-current .tl-card{ border-color:var(--bloom-mist); }
+.tl-item.is-upcoming .tl-card{ opacity:.62; }
+.tl-title{ font-family:var(--font-display); font-weight:600; font-size:16.5px; color:var(--ink); margin-bottom:4px; display:flex; align-items:center; gap:8px;}
+.tl-badge{
+  font-size:9.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; padding:3px 8px; border-radius:999px;
+  background:var(--bloom-mist); color:var(--bloom-deep);
+}
+.tl-desc{ font-size:13.5px; color:var(--ink-soft); line-height:1.55; }
+
+/* ============ BUDGET & VENDOR TAB ============ */
+.budget-card{ background:var(--white); border-radius:var(--radius-lg); padding:22px; box-shadow:var(--shadow); }
+.budget-row{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px; }
+.budget-total-label{ font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); }
+.budget-total-value{ font-family:var(--font-display); font-weight:700; font-size:26px; color:var(--ink); }
+.budget-bar{
+  margin:14px 0 12px; height:12px; border-radius:999px; background:var(--mist); overflow:hidden; display:flex;
+}
+.budget-bar-paid{ background: linear-gradient(90deg, var(--moss), var(--moss-deep)); height:100%; transition:width 600ms ease; }
+.budget-legend{ display:flex; gap:18px; flex-wrap:wrap; }
+.legend-item{ display:flex; align-items:center; gap:6px; font-size:12px; color:var(--ink-soft); font-weight:600; }
+.legend-dot{ width:9px; height:9px; border-radius:50%; }
+.legend-dot.is-paid{ background:var(--moss); }
+.legend-dot.is-outstanding{ background:var(--mist); border:1.5px solid var(--line); }
+
+.vendor-list{ display:flex; flex-direction:column; gap:10px; margin-top:14px; }
+.vendor-card{ background:var(--white); border-radius:var(--radius-md); box-shadow:var(--shadow); overflow:hidden; }
+.vendor-head{
+  width:100%; border:none; background:none; padding:16px 18px; display:flex; align-items:center; gap:12px;
+  text-align:left;
+}
+.vendor-icon{
+  width:38px; height:38px; border-radius:12px; display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; font-size:16px;
+}
+.vendor-info{ flex:1; min-width:0; }
+.vendor-name{ font-weight:700; font-size:14.5px; color:var(--ink); }
+.vendor-cat{ font-size:12px; color:var(--ink-soft); margin-top:1px; }
+.vendor-right{ display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0; }
+.vendor-pill{
+  font-size:10px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; padding:3px 9px; border-radius:999px;
+}
+.vendor-pill.st-booked{ background:#DCE7F5; color:#2E5C94; }
+.vendor-pill.st-negotiation{ background:var(--gold-mist); color:#8A6A1F; }
+.vendor-pill.st-fixed{ background:var(--moss-mist); color:var(--moss-deep); }
+.vendor-pill.st-notstarted{ background:var(--mist); color:var(--ink-soft); }
+.vendor-chevron{ width:16px; height:16px; color:var(--ink-soft); transition:transform 220ms ease; }
+.vendor-card.is-open .vendor-chevron{ transform:rotate(180deg); }
+.vendor-body{ max-height:0; overflow:hidden; transition:max-height 280ms ease; }
+.vendor-card.is-open .vendor-body{ max-height:400px; }
+.vendor-body-inner{ padding:0 18px 18px; border-top:1px solid var(--paper-deep); }
+.vendor-mini-row{ display:flex; justify-content:space-between; font-size:12.5px; padding:9px 0; border-bottom:1px dashed var(--line); }
+.vendor-mini-row:last-child{ border-bottom:none; }
+.vendor-mini-label{ color:var(--ink-soft); font-weight:600; }
+.vendor-mini-value{ color:var(--ink); font-weight:700; }
+.termin-chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+.termin-chip{
+  font-size:10.5px; font-weight:700; padding:5px 9px; border-radius:8px; background:var(--paper-deep); color:var(--ink-soft);
+  display:flex; align-items:center; gap:5px;
+}
+.termin-chip.is-paid{ background:var(--moss-mist); color:var(--moss-deep); }
+.termin-chip .dot{ width:6px; height:6px; border-radius:50%; background:currentColor; opacity:.7; }
+
+/* ============ STAFF DRAWER ============ */
+.staff-overlay{
+  position:fixed; inset:0; background:rgba(43,36,48,.5); z-index:50; display:none; align-items:flex-end;
+  backdrop-filter: blur(2px);
+}
+.staff-overlay.is-active{ display:flex; }
+.staff-drawer{
+  background:var(--paper); width:100%; max-height:88vh; overflow-y:auto; border-radius:24px 24px 0 0;
+  padding:22px 20px 32px; animation: drawer-up 320ms cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes drawer-up{ from{ transform:translateY(100%); } to{ transform:translateY(0); } }
+.staff-drawer-handle{ width:40px; height:4px; border-radius:99px; background:var(--line); margin:0 auto 18px; }
+.staff-title{ font-family:var(--font-display); font-weight:600; font-size:20px; margin-bottom:4px; }
+.staff-sub{ font-size:12.5px; color:var(--ink-soft); margin-bottom:18px; }
+.staff-field{ margin-bottom:14px; }
+.staff-field label{ display:block; font-size:11.5px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.05em; margin-bottom:6px; }
+.staff-field input, .staff-field select{
+  width:100%; padding:11px 13px; border-radius:10px; border:1.5px solid var(--line); font-size:14px;
+  background:var(--white); color:var(--ink);
+}
+.staff-field input:focus, .staff-field select:focus{ outline:none; border-color:var(--bloom); }
+.staff-save-btn{
+  width:100%; padding:14px; border-radius:12px; border:none; background:var(--moss); color:var(--white);
+  font-weight:700; font-size:14px; margin-top:8px;
+}
+.staff-save-btn:hover{ background:var(--moss-deep); }
+.staff-close-btn{
+  width:100%; padding:12px; border-radius:12px; border:1.5px solid var(--line); background:none; color:var(--ink-soft);
+  font-weight:700; font-size:13px; margin-top:8px;
+}
+.staff-vendor-edit{ background:var(--white); border-radius:12px; padding:14px; margin-bottom:10px; box-shadow:var(--shadow); }
+.staff-toast{
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--ink); color:var(--white);
+  padding:12px 20px; border-radius:999px; font-size:13px; font-weight:600; z-index:60; opacity:0; pointer-events:none;
+  transition: all 260ms ease; box-shadow:var(--shadow-lift);
+}
+.staff-toast.is-active{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+.footer-note{ text-align:center; padding:20px 24px 0; font-size:11.5px; color:#B4AAA0; line-height:1.6; }
+.footer-note button{ background:none; border:none; color:#B4AAA0; text-decoration:underline; text-underline-offset:2px; font-size:11.5px; }
+</style>
+</head>
+<body>
+<div class="app-root" id="appRoot"></div>
+<script>
+/* =====================================================================
+   GAIA ORGANIZER — CLIENT PORTAL
+   Vanilla JS, single-file app. Data persists via window.storage (shared),
+   so every visitor with a valid access code sees the same live data.
+   ===================================================================== */
+
+const STAGES = [
+  { key:"booking", title:"Booking", desc:"Selamat bergabung! Kami resmi mulai mendampingi perjalanan pernikahan Anda." },
+  { key:"kickoff", title:"Kick Off Meeting", desc:"Perkenalan tim dan mendengarkan impian pernikahan Anda secara mendalam." },
+  { key:"concept", title:"Concept Development", desc:"Kami merangkai konsep dan suasana yang mencerminkan cerita Anda berdua." },
+  { key:"vendor", title:"Vendor Selection", desc:"Memilihkan mitra terbaik untuk mewujudkan setiap detail hari spesial Anda." },
+  { key:"design", title:"Design Finalization", desc:"Menyempurnakan setiap detail visual, dekorasi, dan nuansa acara." },
+  { key:"invitation", title:"Invitation & RSVP", desc:"Mengelola undangan dan konfirmasi kehadiran tamu dengan rapi." },
+  { key:"technical", title:"Technical Meeting", desc:"Menyusun teknis acara bersama seluruh vendor agar semua selaras." },
+  { key:"final", title:"Final Preparation", desc:"Pengecekan akhir seluruh detail, memastikan semua siap sempurna." },
+  { key:"wedding", title:"Wedding Day", desc:"Hari bahagia Anda — kami hadir penuh untuk memastikan semua berjalan indah." },
+  { key:"after", title:"After Service", desc:"Kami tetap hadir setelahnya untuk memastikan kenangan Anda terjaga baik." },
+];
+
+const VENDOR_ICONS = {
+  "Venue":"🏛️","Dekorasi":"💐","Catering":"🍽️","MUA & Attire":"💄",
+  "Fotografi & Video":"📷","Entertainment & MC":"🎤","Lighting & Sound":"💡",
+  "Percetakan":"🖨️","Transportasi":"🚗","Lainnya":"📦"
+};
+
+function seedWeddings(){
+  return {
+    "ANDRABUNGA26": {
+      coupleName: "Andra & Bunga",
+      weddingDate: "2026-09-12",
+      venue: "The Grand Ballroom",
+      pm: "Sarah",
+      currentStageIndex: 3,
+      overallProgress: 0.42,
+      budget: { totalBudget: 373000000, totalContract: 302000000, totalPaid: 147000000 },
+      alert: "",
+      vendors: [
+        { name:"Nama Vendor Venue", category:"Venue", contract:85000000, paid:40000000, status:"Booked",
+          termins:[{label:"Termin 1",amount:20000000,paid:true},{label:"Termin 2",amount:20000000,paid:true},{label:"Termin 3",amount:20000000,paid:false},{label:"Termin 4",amount:15000000,paid:false},{label:"Pelunasan",amount:10000000,paid:false}] },
+        { name:"Nama Vendor Dekorasi", category:"Dekorasi", contract:55000000, paid:20000000, status:"Booked",
+          termins:[{label:"Termin 1",amount:20000000,paid:true},{label:"Termin 2",amount:20000000,paid:false},{label:"Pelunasan",amount:15000000,paid:false}] },
+        { name:"Nama Vendor Catering", category:"Catering", contract:95000000, paid:40000000, status:"Negotiation",
+          termins:[{label:"Termin 1",amount:20000000,paid:true},{label:"Termin 2",amount:20000000,paid:true},{label:"Termin 3",amount:20000000,paid:false},{label:"Termin 4",amount:20000000,paid:false},{label:"Pelunasan",amount:15000000,paid:false}] },
+        { name:"Nama Vendor MUA", category:"MUA & Attire", contract:25000000, paid:25000000, status:"Fixed / Lunas",
+          termins:[{label:"Lunas di Awal",amount:25000000,paid:true}] },
+        { name:"Nama Vendor Fotografi", category:"Fotografi & Video", contract:30000000, paid:10000000, status:"Booked",
+          termins:[{label:"Termin 1",amount:10000000,paid:true},{label:"Termin 2",amount:10000000,paid:false},{label:"Pelunasan",amount:10000000,paid:false}] },
+        { name:"Nama Vendor Entertainment", category:"Entertainment & MC", contract:0, paid:0, status:"Negotiation", termins:[] },
+        { name:"Nama Vendor Lighting & Sound", category:"Lighting & Sound", contract:0, paid:0, status:"Not Started", termins:[] },
+        { name:"Nama Vendor Percetakan", category:"Percetakan", contract:12000000, paid:12000000, status:"Fixed / Lunas",
+          termins:[{label:"Lunas di Awal",amount:12000000,paid:true}] },
+        { name:"Nama Vendor Transportasi", category:"Transportasi", contract:0, paid:0, status:"Not Started", termins:[] },
+      ]
+    },
+    "HENDRAMAYA26": {
+      coupleName: "Hendra & Maya",
+      weddingDate: "2026-07-31",
+      venue: "Hotel Mulia",
+      pm: "Sarah",
+      currentStageIndex: 7,
+      overallProgress: 0.92,
+      budget: { totalBudget: 400000000, totalContract: 400000000, totalPaid: 390000000 },
+      alert: "Vendor lighting belum konfirmasi kesiapan untuk H-5. Tim kami sedang follow up intensif.",
+      vendors: [
+        { name:"Nama Vendor Venue", category:"Venue", contract:180000000, paid:180000000, status:"Fixed / Lunas",
+          termins:[{label:"Termin 1",amount:90000000,paid:true},{label:"Pelunasan",amount:90000000,paid:true}] },
+        { name:"Nama Vendor Catering", category:"Catering", contract:150000000, paid:150000000, status:"Fixed / Lunas",
+          termins:[{label:"Termin 1",amount:75000000,paid:true},{label:"Pelunasan",amount:75000000,paid:true}] },
+        { name:"Nama Vendor Lighting & Sound", category:"Lighting & Sound", contract:35000000, paid:25000000, status:"Booked",
+          termins:[{label:"Termin 1",amount:25000000,paid:true},{label:"Pelunasan",amount:10000000,paid:false}] },
+        { name:"Nama Vendor MUA", category:"MUA & Attire", contract:35000000, paid:35000000, status:"Fixed / Lunas",
+          termins:[{label:"Lunas di Awal",amount:35000000,paid:true}] },
+      ]
+    },
+    "BAGUSPUTRI26": {
+      coupleName: "Bagus & Putri",
+      weddingDate: "2026-07-04",
+      venue: "Aula Serba Guna",
+      pm: "Bela",
+      currentStageIndex: 9,
+      overallProgress: 1.0,
+      budget: { totalBudget: 150000000, totalContract: 150000000, totalPaid: 150000000 },
+      alert: "",
+      vendors: [
+        { name:"Nama Vendor Venue", category:"Venue", contract:60000000, paid:60000000, status:"Fixed / Lunas",
+          termins:[{label:"Lunas",amount:60000000,paid:true}] },
+        { name:"Nama Vendor Catering", category:"Catering", contract:60000000, paid:60000000, status:"Fixed / Lunas",
+          termins:[{label:"Lunas",amount:60000000,paid:true}] },
+        { name:"Nama Vendor Dekorasi", category:"Dekorasi", contract:30000000, paid:30000000, status:"Fixed / Lunas",
+          termins:[{label:"Lunas",amount:30000000,paid:true}] },
+      ]
+    }
+  };
+}
+
+const STAFF_PASSCODE = "GAIA-STAFF";
+let DB = null;               // in-memory mirror of storage
+let currentCode = null;      // access code of the wedding currently viewed
+let currentTab = "ringkasan";
+let openVendorIdx = null;
+
+async function loadDB(){
+  try{
+    const res = await window.storage.get("weddings", true);
+    if(res && res.value){ return JSON.parse(res.value); }
+  }catch(e){ /* key not found yet */ }
+  const seeded = seedWeddings();
+  try{ await window.storage.set("weddings", JSON.stringify(seeded), true); }catch(e){ console.error("seed save failed", e); }
+  return seeded;
+}
+async function saveDB(){
+  try{ await window.storage.set("weddings", JSON.stringify(DB), true); }
+  catch(e){ console.error("save failed", e); showToast("Gagal menyimpan. Coba lagi."); }
+}
+
+/* ---------- helpers ---------- */
+function fmtRupiah(n){
+  if(!n) return "Rp 0";
+  return "Rp " + Math.round(n).toLocaleString("id-ID");
+}
+function fmtRupiahShort(n){
+  if(!n) return "Rp 0";
+  if(n >= 1000000000) return "Rp " + (n/1000000000).toFixed(1).replace(/\.0$/,"") + " M";
+  if(n >= 1000000) return "Rp " + (n/1000000).toFixed(0) + " Jt";
+  return "Rp " + n.toLocaleString("id-ID");
+}
+function fmtDate(iso){
+  const d = new Date(iso + "T00:00:00");
+  return d.toLocaleDateString("id-ID", { day:"2-digit", month:"long", year:"numeric" });
+}
+function daysUntil(iso){
+  const target = new Date(iso + "T00:00:00");
+  const now = new Date(); now.setHours(0,0,0,0);
+  return Math.round((target - now) / 86400000);
+}
+function statusPillClass(status){
+  if(status === "Fixed / Lunas") return "st-fixed";
+  if(status === "Booked") return "st-booked";
+  if(status === "Negotiation") return "st-negotiation";
+  return "st-notstarted";
+}
+function showToast(msg){
+  const el = document.getElementById("staffToast");
+  el.textContent = msg;
+  el.classList.add("is-active");
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=> el.classList.remove("is-active"), 2400);
+}
+
+/* ---------- garland progress ring (signature element) ----------
+   A ring of small leaf marks around a circle; leaves fill in with
+   the moss/gold gradient as `pct` advances, echoing a wedding wreath. */
+function garlandRingSVG(pct, size){
+  const leafCount = 32;
+  const r = size/2 - 14;
+  const cx = size/2, cy = size/2;
+  let leaves = "";
+  for(let i=0;i<leafCount;i++){
+    const angle = (i / leafCount) * Math.PI * 2;
+    const filled = i < Math.round(leafCount * pct);
+    const lx = cx + r * Math.cos(angle);
+    const ly = cy + r * Math.sin(angle);
+    const rot = (angle * 180/Math.PI) + 90;
+    const isMilestone = i % 8 === 0;
+    const leafColor = filled ? (isMilestone ? "var(--gold)" : "var(--moss)") : "var(--mist)";
+    const leafW = isMilestone ? 7 : 5.5, leafH = isMilestone ? 12 : 9;
+    leaves += `<g transform="translate(${lx},${ly}) rotate(${rot})" class="ring-leaf" style="opacity:${filled?1:0.9}">
+      <ellipse cx="0" cy="0" rx="${leafW/2}" ry="${leafH/2}" fill="${leafColor}"/>
+    </g>`;
+  }
+  return `<svg viewBox="0 0 ${size} ${size}" style="transform:none;">${leaves}</svg>`;
+}
+
+/* ---------- icon sprites (inline SVG, no external deps) ---------- */
+function iconSprout(){
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="100%" height="100%">
+    <path d="M12 20V10"/><path d="M12 10C12 6 9 4 5 4c0 4 2 7 7 7Z"/><path d="M12 13c0-3.5 2.5-5.5 7-6 0 4-2 7-7 7Z"/></svg>`;
+}
+function iconArrow(){
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15" style="display:inline-block;vertical-align:-2px;"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>`;
+}
+function iconCheck(){
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="100%" height="100%"><path d="M20 6L9 17l-5-5"/></svg>`;
+}
+function iconDot(){
+  return `<svg viewBox="0 0 24 24" width="100%" height="100%"><circle cx="12" cy="12" r="4" fill="currentColor"/></svg>`;
+}
+function iconAlert(){
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="100%" height="100%"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+}
+function iconCalendar(){
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="100%" height="100%"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>`;
+}
+function iconChevron(){
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="100%" height="100%"><path d="M6 9l6 6 6-6"/></svg>`;
+}
+
+/* ---------- boot / gate ---------- */
+async function boot(){
+  DB = await loadDB();
+  renderRoot();
+}
+
+function renderRoot(){
+  const root = document.getElementById("appRoot");
+  root.innerHTML = `
+    <div class="gate-screen" id="gateScreen">
+      <div class="gate-mark">${iconSprout()}</div>
+      <div class="gate-eyebrow">Gaia Organizer</div>
+      <h1 class="gate-title">Portal Klien</h1>
+      <p class="gate-sub">Perjalanan menuju hari bahagia Anda, dalam satu tempat yang tenang.</p>
+      <form class="gate-form" id="gateForm">
+        <input class="gate-input sr-focus" id="gateInput" placeholder="Kode akses Anda" autocomplete="off" autocapitalize="characters" />
+        <div class="gate-error" id="gateError"></div>
+        <button class="gate-btn" type="submit">Buka Portal Saya ${iconArrow()}</button>
+      </form>
+      <p class="gate-hint">Kode akses dikirimkan oleh Project Manager Anda melalui WhatsApp saat awal booking.</p>
+      <button class="gate-staff-link" id="staffLinkGate">Masuk sebagai Tim Gaia</button>
+    </div>
+
+    <div class="app-shell" id="appShell">
+      <div class="shell-header">
+        <div class="container">
+          <div class="shell-top-row">
+            <div class="shell-brand">${iconSprout()} Gaia Organizer</div>
+            <button class="shell-logout" id="logoutBtn">Keluar</button>
+          </div>
+          <div class="shell-couple" id="shellCouple">—</div>
+          <div class="shell-meta" id="shellMeta">—</div>
+          <div class="tab-nav">
+            <button class="tab-btn" data-tab="ringkasan">Ringkasan</button>
+            <button class="tab-btn" data-tab="perjalanan">Perjalanan</button>
+            <button class="tab-btn" data-tab="budget">Budget &amp; Vendor</button>
+          </div>
+        </div>
+      </div>
+      <div class="shell-body">
+        <div class="container">
+          <div class="tab-panel" id="panel-ringkasan"></div>
+          <div class="tab-panel" id="panel-perjalanan"></div>
+          <div class="tab-panel" id="panel-budget"></div>
+          <p class="footer-note">Data diperbarui langsung oleh tim Gaia Organizer.<br/><button id="staffLinkFooter">Masuk sebagai Tim Gaia</button></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="staff-overlay" id="staffOverlay">
+      <div class="staff-drawer" id="staffDrawer"></div>
+    </div>
+    <div class="staff-toast" id="staffToast"></div>
+  `;
+
+  document.getElementById("gateForm").addEventListener("submit", onGateSubmit);
+  document.getElementById("staffLinkGate").addEventListener("click", ()=> openStaffLogin());
+  document.getElementById("staffLinkFooter").addEventListener("click", ()=> openStaffLogin());
+  document.getElementById("logoutBtn").addEventListener("click", logout);
+  document.querySelectorAll(".tab-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=> switchTab(btn.dataset.tab));
+  });
+  document.getElementById("staffOverlay").addEventListener("click", (e)=>{
+    if(e.target.id === "staffOverlay") closeStaffDrawer();
+  });
+}
+
+function onGateSubmit(e){
+  e.preventDefault();
+  const input = document.getElementById("gateInput");
+  const code = input.value.trim().toUpperCase().replace(/\s+/g,"");
+  const errEl = document.getElementById("gateError");
+  if(!code){
+    errEl.textContent = "Masukkan kode akses terlebih dahulu.";
+    retriggerShake(errEl);
+    return;
+  }
+  if(!DB[code]){
+    errEl.textContent = "Kode akses tidak ditemukan. Periksa kembali huruf/angkanya.";
+    retriggerShake(errEl);
+    return;
+  }
+  errEl.textContent = "";
+  enterPortal(code);
+}
+function retriggerShake(el){
+  el.style.animation = "none";
+  void el.offsetWidth;
+  el.style.animation = "";
+}
+
+function enterPortal(code){
+  currentCode = code;
+  document.getElementById("gateScreen").style.display = "none";
+  document.getElementById("appShell").classList.add("is-active");
+  currentTab = "ringkasan";
+  renderShellHeader();
+  renderAllTabs();
+  switchTab("ringkasan");
+}
+
+function logout(){
+  currentCode = null;
+  document.getElementById("appShell").classList.remove("is-active");
+  document.getElementById("gateScreen").style.display = "flex";
+  document.getElementById("gateInput").value = "";
+  document.getElementById("gateError").textContent = "";
+}
+
+function switchTab(tab){
+  currentTab = tab;
+  document.querySelectorAll(".tab-btn").forEach(b=> b.classList.toggle("is-active", b.dataset.tab===tab));
+  document.querySelectorAll(".tab-panel").forEach(p=> p.classList.remove("is-active"));
+  document.getElementById("panel-"+tab).classList.add("is-active");
+}
+
+function renderShellHeader(){
+  const w = DB[currentCode];
+  const days = daysUntil(w.weddingDate);
+  document.getElementById("shellCouple").textContent = w.coupleName;
+  document.getElementById("shellMeta").innerHTML =
+    `${fmtDate(w.weddingDate)} <span class="dot">·</span> ${w.venue}`;
+}
+
+function renderAllTabs(){
+  renderRingkasan();
+  renderPerjalanan();
+  renderBudget();
+}
+
+/* ---------- RINGKASAN TAB ---------- */
+function renderRingkasan(){
+  const w = DB[currentCode];
+  const days = daysUntil(w.weddingDate);
+  const pct = Math.max(0, Math.min(1, w.overallProgress));
+  const stage = STAGES[w.currentStageIndex] || STAGES[0];
+  const b = w.budget;
+  const budgetHealthPct = b.totalBudget ? (b.totalContract / b.totalBudget) : 0;
+  const paymentPct = b.totalContract ? (b.totalPaid / b.totalContract) : 0;
+
+  const nextVendor = w.vendors.find(v => v.termins.some(t => !t.paid));
+  let milestoneHtml = "";
+  if(days >= 0 && stage.key !== "wedding" && stage.key !== "after"){
+    milestoneHtml = `
+      <div class="milestone-card">
+        <div class="milestone-icon">${iconCalendar()}</div>
+        <div>
+          <div class="milestone-label">Tahap Berikutnya</div>
+          <div class="milestone-title">${STAGES[Math.min(w.currentStageIndex+1, STAGES.length-1)].title}</div>
+          <div class="milestone-date">Sedang berjalan menuju tahap ini</div>
+        </div>
+      </div>`;
+  }
+
+  const alertHtml = w.alert ? `
+    <div class="alert-card">
+      ${iconAlert()}
+      <div>
+        <div class="alert-title">Perlu Perhatian</div>
+        <div class="alert-text">${w.alert}</div>
+      </div>
+    </div>` : "";
+
+  document.getElementById("panel-ringkasan").innerHTML = `
+    <div class="hero-card">
+      <div class="ring-wrap">
+        ${garlandRingSVG(pct, 196)}
+        <div class="ring-center">
+          <div class="ring-pct">${Math.round(pct*100)}%</div>
+          <div class="ring-pct-label">Progress</div>
+        </div>
+      </div>
+      <div class="hero-days">${days >= 0 ? days + " hari menuju Hari H" : "Hari bahagia telah berlalu ✦"}</div>
+      <div class="hero-stage">Tahap saat ini: <b>${stage.title}</b></div>
+      ${alertHtml}
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card is-bloom">
+        <div class="stat-label">Budget Terpakai</div>
+        <div class="stat-value">${Math.round(budgetHealthPct*100)}%</div>
+        <div class="stat-sub">${fmtRupiahShort(b.totalContract)} dari ${fmtRupiahShort(b.totalBudget)}</div>
+      </div>
+      <div class="stat-card is-gold">
+        <div class="stat-label">Pembayaran</div>
+        <div class="stat-value">${Math.round(paymentPct*100)}%</div>
+        <div class="stat-sub">${fmtRupiahShort(b.totalPaid)} terbayar</div>
+      </div>
+    </div>
+
+    ${milestoneHtml}
+  `;
+}
+
+/* ---------- PERJALANAN TAB ---------- */
+function renderPerjalanan(){
+  const w = DB[currentCode];
+  const items = STAGES.map((s, idx)=>{
+    let cls = "is-upcoming", dotContent = iconDot();
+    if(idx < w.currentStageIndex){ cls = "is-done"; dotContent = iconCheck(); }
+    else if(idx === w.currentStageIndex){ cls = "is-current"; dotContent = iconDot(); }
+    const badge = idx === w.currentStageIndex ? `<span class="tl-badge">Sedang Berjalan</span>` : "";
+    return `
+      <div class="tl-item ${cls}">
+        <div class="tl-dot">${dotContent}</div>
+        <div class="tl-card">
+          <div class="tl-title">${s.title} ${badge}</div>
+          <div class="tl-desc">${s.desc}</div>
+        </div>
+      </div>`;
+  }).join("");
+
+  document.getElementById("panel-perjalanan").innerHTML = `
+    <p style="font-family:var(--font-display); font-style:italic; color:var(--ink-soft); font-size:15px; margin-bottom:22px; line-height:1.6;">
+      Setiap momen menuju hari bahagia Anda, kami dampingi dengan penuh perhatian.
+    </p>
+    <div class="timeline">${items}</div>
+  `;
+}
+
+/* ---------- BUDGET & VENDOR TAB ---------- */
+function renderBudget(){
+  const w = DB[currentCode];
+  const b = w.budget;
+  const paidPct = b.totalContract ? Math.min(100, (b.totalPaid / b.totalContract) * 100) : 0;
+  const outstanding = b.totalContract - b.totalPaid;
+
+  const vendorCards = w.vendors.map((v, idx)=>{
+    const icon = VENDOR_ICONS[v.category] || VENDOR_ICONS["Lainnya"];
+    const isOpen = openVendorIdx === idx;
+    const pct = v.contract ? Math.round((v.paid / v.contract) * 100) : 0;
+    const termChips = v.termins.length ? v.termins.map(t=>
+      `<div class="termin-chip ${t.paid?'is-paid':''}"><span class="dot"></span>${t.label}: ${fmtRupiahShort(t.amount)}</div>`
+    ).join("") : `<div class="termin-chip">Belum ada jadwal pembayaran</div>`;
+
+    return `
+      <div class="vendor-card ${isOpen?'is-open':''}">
+        <button class="vendor-head" data-vendor-idx="${idx}">
+          <div class="vendor-icon" style="background:var(--paper-deep);">${icon}</div>
+          <div class="vendor-info">
+            <div class="vendor-name">${v.name}</div>
+            <div class="vendor-cat">${v.category}</div>
+          </div>
+          <div class="vendor-right">
+            <span class="vendor-pill ${statusPillClass(v.status)}">${v.status}</span>
+          </div>
+          <div class="vendor-chevron">${iconChevron()}</div>
+        </button>
+        <div class="vendor-body">
+          <div class="vendor-body-inner">
+            <div class="vendor-mini-row"><span class="vendor-mini-label">Nilai Kontrak</span><span class="vendor-mini-value">${fmtRupiah(v.contract)}</span></div>
+            <div class="vendor-mini-row"><span class="vendor-mini-label">Sudah Dibayar</span><span class="vendor-mini-value">${fmtRupiah(v.paid)} (${pct}%)</span></div>
+            <div class="vendor-mini-row"><span class="vendor-mini-label">Sisa Pembayaran</span><span class="vendor-mini-value">${fmtRupiah(v.contract - v.paid)}</span></div>
+            <div class="termin-chips">${termChips}</div>
+          </div>
+        </div>
+      </div>`;
+  }).join("");
+
+  document.getElementById("panel-budget").innerHTML = `
+    <div class="budget-card">
+      <div class="budget-row">
+        <span class="budget-total-label">Total Nilai Kontrak</span>
+      </div>
+      <div class="budget-total-value">${fmtRupiah(b.totalContract)}</div>
+      <div class="budget-bar"><div class="budget-bar-paid" style="width:${paidPct}%;"></div></div>
+      <div class="budget-legend">
+        <div class="legend-item"><span class="legend-dot is-paid"></span> Terbayar ${fmtRupiahShort(b.totalPaid)}</div>
+        <div class="legend-item"><span class="legend-dot is-outstanding"></span> Sisa ${fmtRupiahShort(outstanding)}</div>
+      </div>
+    </div>
+
+    <div class="section-label">Vendor (${w.vendors.length})</div>
+    <div class="vendor-list">${vendorCards}</div>
+  `;
+
+  document.querySelectorAll("[data-vendor-idx]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const idx = parseInt(btn.dataset.vendorIdx, 10);
+      openVendorIdx = (openVendorIdx === idx) ? null : idx;
+      renderBudget();
+    });
+  });
+}
+
+/* ---------- STAFF MODE ---------- */
+function openStaffLogin(){
+  const pass = prompt("Masukkan kode akses Tim Gaia:");
+  if(pass === null) return;
+  if(pass.trim() !== STAFF_PASSCODE){ alert("Kode staff tidak sesuai."); return; }
+  openStaffDrawer();
+}
+
+let staffMode = "edit"; // "edit" | "create"
+
+function openStaffDrawer(){
+  staffMode = "edit";
+  const codes = Object.keys(DB);
+  const selected = currentCode || codes[0];
+  renderStaffDrawer(selected);
+  document.getElementById("staffOverlay").classList.add("is-active");
+}
+function closeStaffDrawer(){
+  document.getElementById("staffOverlay").classList.remove("is-active");
+}
+
+function renderStaffDrawer(selectedCode){
+  if(staffMode === "create"){ renderStaffCreateForm(); return; }
+
+  const codes = Object.keys(DB);
+  const w = DB[selectedCode];
+  const stageOptions = STAGES.map((s,i)=>`<option value="${i}" ${i===w.currentStageIndex?'selected':''}>${i+1}. ${s.title}</option>`).join("");
+  const codeOptions = codes.map(c=>`<option value="${c}" ${c===selectedCode?'selected':''}>${DB[c].coupleName} (${c})</option>`).join("");
+  const categoryOptions = Object.keys(VENDOR_ICONS).map(c=>`<option value="${c}">${VENDOR_ICONS[c]} ${c}</option>`).join("");
+
+  const vendorEdits = w.vendors.map((v, idx)=>`
+    <div class="staff-vendor-edit">
+      <div style="font-weight:700; font-size:13px; margin-bottom:8px;">${v.name} <span style="font-weight:500;color:var(--ink-soft);">· ${v.category}</span></div>
+      <div class="staff-field">
+        <label>Status Vendor</label>
+        <select data-staff-vendor-status="${idx}">
+          ${["Not Started","Negotiation","Booked","Fixed / Lunas","Cancelled"].map(s=>`<option value="${s}" ${s===v.status?'selected':''}>${s}</option>`).join("")}
+        </select>
+      </div>
+      <div class="staff-field">
+        <label>Nilai Kontrak (Rp)</label>
+        <input type="number" data-staff-vendor-contract="${idx}" value="${v.contract}" />
+      </div>
+      <div class="staff-field">
+        <label>Jumlah Sudah Dibayar (Rp)</label>
+        <input type="number" data-staff-vendor-paid="${idx}" value="${v.paid}" />
+      </div>
+    </div>
+  `).join("");
+
+  document.getElementById("staffDrawer").innerHTML = `
+    <div class="staff-drawer-handle"></div>
+    <div class="staff-title">Mode Tim Gaia</div>
+    <div class="staff-sub">Perubahan langsung tampil ke klien setelah disimpan.</div>
+
+    <div class="staff-field">
+      <label>Pilih Wedding</label>
+      <select id="staffCodeSelect">${codeOptions}</select>
+    </div>
+    <button class="staff-close-btn" id="staffAddClientBtn" style="border-color:var(--bloom); color:var(--bloom-deep); margin-top:0;">+ Tambah Klien Baru</button>
+
+    <div class="section-label" style="margin-top:22px;">Progress &amp; Tahap</div>
+    <div class="staff-field">
+      <label>Overall Progress (%)</label>
+      <input type="number" id="staffProgress" min="0" max="100" value="${Math.round(w.overallProgress*100)}" />
+    </div>
+    <div class="staff-field">
+      <label>Tahap Saat Ini</label>
+      <select id="staffStage">${stageOptions}</select>
+    </div>
+    <div class="staff-field">
+      <label>Isu / Perhatian (kosongkan jika tidak ada)</label>
+      <input type="text" id="staffAlert" value="${w.alert || ''}" placeholder="Contoh: Menunggu konfirmasi vendor..." />
+    </div>
+
+    <div class="section-label">Budget</div>
+    <div class="staff-field">
+      <label>Total Budget Rencana (Rp)</label>
+      <input type="number" id="staffBudgetTotal" value="${w.budget.totalBudget}" />
+    </div>
+    <div class="staff-field">
+      <label>Total Nilai Kontrak (Rp)</label>
+      <input type="number" id="staffBudgetContract" value="${w.budget.totalContract}" />
+    </div>
+
+    <div class="section-label">Vendor (${w.vendors.length})</div>
+    ${vendorEdits}
+
+    <div class="staff-vendor-edit" style="background:var(--paper-deep); box-shadow:none;">
+      <div style="font-weight:700; font-size:13px; margin-bottom:8px;">+ Tambah Vendor Baru</div>
+      <div class="staff-field"><label>Nama Vendor</label><input type="text" id="newVendorName" placeholder="Contoh: Nama Vendor Sound System" /></div>
+      <div class="staff-field"><label>Kategori</label><select id="newVendorCategory">${categoryOptions}</select></div>
+      <div class="staff-field"><label>Nilai Kontrak (Rp)</label><input type="number" id="newVendorContract" value="0" /></div>
+      <button class="staff-close-btn" id="addVendorBtn" style="border-color:var(--moss); color:var(--moss-deep); margin-top:2px;">+ Tambahkan Vendor Ini</button>
+    </div>
+
+    <button class="staff-save-btn" id="staffSaveBtn">Simpan Perubahan</button>
+    <button class="staff-close-btn" id="staffCloseBtn">Tutup</button>
+    <button class="staff-close-btn" id="staffDeleteBtn" style="border-color:#D9827A; color:#B23A2E; margin-top:20px;">Hapus Klien Ini</button>
+  `;
+
+  document.getElementById("staffCodeSelect").addEventListener("change", (e)=>{
+    renderStaffDrawer(e.target.value);
+  });
+  document.getElementById("staffAddClientBtn").addEventListener("click", ()=>{
+    staffMode = "create";
+    renderStaffDrawer(selectedCode);
+  });
+  document.getElementById("staffCloseBtn").addEventListener("click", closeStaffDrawer);
+
+  document.getElementById("addVendorBtn").addEventListener("click", ()=>{
+    const nameEl = document.getElementById("newVendorName");
+    const name = nameEl.value.trim();
+    if(!name){ nameEl.focus(); retriggerShake(nameEl); return; }
+    const category = document.getElementById("newVendorCategory").value;
+    const contract = parseFloat(document.getElementById("newVendorContract").value) || 0;
+    w.vendors.push({ name, category, contract, paid:0, status:"Not Started", termins:[] });
+    renderStaffDrawer(selectedCode);
+  });
+
+  document.getElementById("staffDeleteBtn").addEventListener("click", async ()=>{
+    const ok = confirm(`Hapus data wedding "${w.coupleName}" (${selectedCode})? Tindakan ini tidak bisa dibatalkan.`);
+    if(!ok) return;
+    delete DB[selectedCode];
+    await saveDB();
+    showToast("Klien dihapus.");
+    if(currentCode === selectedCode){ logout(); }
+    const remaining = Object.keys(DB);
+    if(remaining.length === 0){ closeStaffDrawer(); return; }
+    renderStaffDrawer(remaining[0]);
+  });
+
+  document.getElementById("staffSaveBtn").addEventListener("click", async ()=>{
+    const code = document.getElementById("staffCodeSelect").value;
+    const target = DB[code];
+    target.overallProgress = Math.max(0, Math.min(100, parseFloat(document.getElementById("staffProgress").value) || 0)) / 100;
+    target.currentStageIndex = parseInt(document.getElementById("staffStage").value, 10);
+    target.alert = document.getElementById("staffAlert").value.trim();
+    target.budget.totalBudget = parseFloat(document.getElementById("staffBudgetTotal").value) || 0;
+    target.budget.totalContract = parseFloat(document.getElementById("staffBudgetContract").value) || 0;
+
+    let totalPaid = 0;
+    target.vendors.forEach((v, idx)=>{
+      const statusEl = document.querySelector(`[data-staff-vendor-status="${idx}"]`);
+      const contractEl = document.querySelector(`[data-staff-vendor-contract="${idx}"]`);
+      const paidEl = document.querySelector(`[data-staff-vendor-paid="${idx}"]`);
+      if(statusEl) v.status = statusEl.value;
+      if(contractEl) v.contract = parseFloat(contractEl.value) || 0;
+      if(paidEl) v.paid = parseFloat(paidEl.value) || 0;
+      totalPaid += v.paid;
+    });
+    target.budget.totalPaid = totalPaid;
+
+    await saveDB();
+    showToast("Perubahan tersimpan ✓");
+    if(currentCode === code){ renderShellHeader(); renderAllTabs(); }
+    closeStaffDrawer();
+  });
+}
+
+function renderStaffCreateForm(){
+  document.getElementById("staffDrawer").innerHTML = `
+    <div class="staff-drawer-handle"></div>
+    <div class="staff-title">Tambah Klien Baru</div>
+    <div class="staff-sub">Buat portal untuk wedding baru. Vendor &amp; detail lain bisa ditambahkan setelah klien dibuat.</div>
+
+    <div class="staff-field">
+      <label>Kode Akses (untuk klien, tanpa spasi)</label>
+      <input type="text" id="newClientCode" placeholder="Contoh: RIZKYAYU27" style="text-transform:uppercase;" />
+    </div>
+    <div class="staff-field"><label>Nama Pasangan</label><input type="text" id="newClientName" placeholder="Contoh: Rizky & Ayu" /></div>
+    <div class="staff-field"><label>Tanggal Wedding</label><input type="date" id="newClientDate" /></div>
+    <div class="staff-field"><label>Venue</label><input type="text" id="newClientVenue" placeholder="Contoh: Hotel Aryaduta" /></div>
+    <div class="staff-field"><label>Project Manager</label><input type="text" id="newClientPM" placeholder="Contoh: Sarah" /></div>
+    <div class="staff-field"><label>Total Budget Rencana (Rp)</label><input type="number" id="newClientBudget" value="0" /></div>
+
+    <div class="gate-error" id="createClientError" style="text-align:left; margin-bottom:6px;"></div>
+    <button class="staff-save-btn" id="createClientBtn">Buat Portal Klien</button>
+    <button class="staff-close-btn" id="cancelCreateBtn">Batal</button>
+  `;
+
+  document.getElementById("cancelCreateBtn").addEventListener("click", ()=>{
+    staffMode = "edit";
+    renderStaffDrawer(currentCode || Object.keys(DB)[0]);
+  });
+
+  document.getElementById("createClientBtn").addEventListener("click", async ()=>{
+    const codeEl = document.getElementById("newClientCode");
+    const nameEl = document.getElementById("newClientName");
+    const dateEl = document.getElementById("newClientDate");
+    const errEl = document.getElementById("createClientError");
+    const code = codeEl.value.trim().toUpperCase().replace(/\s+/g,"");
+    const name = nameEl.value.trim();
+    const date = dateEl.value;
+
+    if(!code || !name || !date){
+      errEl.textContent = "Kode akses, nama pasangan, dan tanggal wedding wajib diisi.";
+      retriggerShake(errEl);
+      return;
+    }
+    if(DB[code]){
+      errEl.textContent = "Kode akses ini sudah dipakai klien lain. Gunakan kode lain.";
+      retriggerShake(errEl);
+      return;
+    }
+    errEl.textContent = "";
+
+    DB[code] = {
+      coupleName: name,
+      weddingDate: date,
+      venue: document.getElementById("newClientVenue").value.trim() || "Belum ditentukan",
+      pm: document.getElementById("newClientPM").value.trim() || "-",
+      currentStageIndex: 0,
+      overallProgress: 0,
+      budget: { totalBudget: parseFloat(document.getElementById("newClientBudget").value) || 0, totalContract: 0, totalPaid: 0 },
+      alert: "",
+      vendors: []
+    };
+    await saveDB();
+    showToast(`Klien "${name}" berhasil dibuat ✓`);
+    staffMode = "edit";
+    renderStaffDrawer(code);
+  });
+}
+
+boot();
+</script>
+</body>
+</html>
