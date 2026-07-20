@@ -226,6 +226,25 @@ input{font-family:inherit;}
 .milestone-title{ font-weight:700; font-size:14.5px; color:var(--ink); }
 .milestone-date{ font-size:12.5px; color:var(--ink-soft); margin-top:1px; }
 
+.meeting-card{
+  margin-top:16px; background:var(--white); border-radius:var(--radius-md); padding:18px 20px;
+  box-shadow:var(--shadow); text-align:left;
+}
+.meeting-card-head{ display:flex; align-items:center; gap:14px; margin-bottom:2px; }
+.meeting-icon{
+  width:44px; height:44px; border-radius:50%; background:var(--gold-mist); color:var(--gold-deep, var(--gold));
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.meeting-icon svg{ width:22px; height:22px; }
+.meeting-heading-label{ font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:3px;}
+.meeting-heading-title{ font-weight:700; font-size:14.5px; color:var(--ink); }
+.meeting-list{ margin-top:12px; display:flex; flex-direction:column; gap:10px; }
+.meeting-item{ padding-top:10px; border-top:1px solid var(--paper-deep, #eee); }
+.meeting-item:first-child{ padding-top:0; border-top:none; }
+.meeting-item-date{ font-size:12.5px; font-weight:700; color:var(--bloom, var(--ink)); }
+.meeting-item-agenda{ font-size:13.5px; color:var(--ink); margin-top:2px; }
+.meeting-item-peserta{ font-size:12px; color:var(--ink-soft); margin-top:2px; }
+
 /* ============ PERJALANAN (TIMELINE) TAB ============ */
 .timeline{ position:relative; padding-left:36px; }
 .timeline::before{
@@ -457,23 +476,43 @@ function seedWeddings(){
 }
 
 const STAFF_PASSCODE = "GAIA-STAFF";
-let DB = null;               // in-memory mirror of storage
+
+/* ---------------------------------------------------------------
+   SUMBER DATA: Google Sheet (via Apps Script Web App), bukan lagi
+   window.storage — karena portal ini di-hosting di domain sendiri,
+   window.storage (fitur khusus Claude Artifact) tidak tersedia di sini.
+
+   Ganti PORTAL_SYNC_URL di bawah dengan "Web app URL" hasil deploy
+   Apps Script (lihat AppsScript_PortalSync.gs.txt). Tim Gaia cukup
+   update data di Google Sheet workbook masing-masing klien (tab
+   "Portal Sync" & "Portal Sync - Vendors") — portal ini akan otomatis
+   menampilkan data terbaru setiap kali dibuka, tanpa input manual di sini.
+   --------------------------------------------------------------- */
+const PORTAL_SYNC_URL = "https://script.google.com/macros/s/AKfycbyRPJOghgKEoQiIk5NAX8a8YonqRQZf0gI2ubqBOQ5gEa9Ed2Im2ZBf2q4wYIVvqPxV/exec";
+
+let DB = null;               // in-memory mirror, diisi dari Google Sheet
 let currentCode = null;      // access code of the wedding currently viewed
 let currentTab = "ringkasan";
 let openVendorIdx = null;
 
 async function loadDB(){
   try{
-    const res = await window.storage.get("weddings", true);
-    if(res && res.value){ return JSON.parse(res.value); }
-  }catch(e){ /* key not found yet */ }
-  const seeded = seedWeddings();
-  try{ await window.storage.set("weddings", JSON.stringify(seeded), true); }catch(e){ console.error("seed save failed", e); }
-  return seeded;
+    const res = await fetch(PORTAL_SYNC_URL, { cache: "no-store" });
+    const data = await res.json();
+    if(data && !data.error){ return data; }
+    console.error("Portal Sync error:", data && data.error);
+  }catch(e){ console.error("Gagal fetch Google Sheet:", e); }
+  // Fallback ke data contoh kalau Sheet belum tersambung/terhubung,
+  // supaya portal tidak blank saat setup awal.
+  return seedWeddings();
 }
+
 async function saveDB(){
-  try{ await window.storage.set("weddings", JSON.stringify(DB), true); }
-  catch(e){ console.error("save failed", e); showToast("Gagal menyimpan. Coba lagi."); }
+  // Google Sheet (via tab "Portal Sync") sekarang menjadi satu-satunya
+  // sumber data. Portal ini read-only terhadap data wedding — perubahan
+  // dilakukan tim Gaia langsung di Google Sheet, portal akan otomatis
+  // menampilkan data terbaru saat halaman dibuka/refresh berikutnya.
+  showToast("Data disimpan di Google Sheet, bukan di portal ini. Edit lewat Sheet ya.");
 }
 
 /* ---------- helpers ---------- */
@@ -721,6 +760,26 @@ function renderRingkasan(){
       </div>
     </div>` : "";
 
+  const meetings = w.upcomingMeetings || [];
+  const meetingHtml = meetings.length ? `
+    <div class="meeting-card">
+      <div class="meeting-card-head">
+        <div class="meeting-icon">${iconCalendar()}</div>
+        <div>
+          <div class="meeting-heading-label">Meeting Berikutnya</div>
+          <div class="meeting-heading-title">${meetings.length} jadwal akan datang</div>
+        </div>
+      </div>
+      <div class="meeting-list">
+        ${meetings.map(m => `
+          <div class="meeting-item">
+            <div class="meeting-item-date">${fmtDate(m.date)}</div>
+            <div class="meeting-item-agenda">${m.agenda}</div>
+            ${m.peserta ? `<div class="meeting-item-peserta">Peserta: ${m.peserta}</div>` : ""}
+          </div>`).join("")}
+      </div>
+    </div>` : "";
+
   document.getElementById("panel-ringkasan").innerHTML = `
     <div class="hero-card">
       <div class="ring-wrap">
@@ -749,6 +808,7 @@ function renderRingkasan(){
     </div>
 
     ${milestoneHtml}
+    ${meetingHtml}
   `;
 }
 
